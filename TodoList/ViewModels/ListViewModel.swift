@@ -77,7 +77,7 @@ class ListViewModel: ObservableObject {
         }
     }
     
-    // Function to save user data using User-Defaults
+    // Function to save user data into User-Defaults
     func saveItems() {
         if let encodedData =  try? JSONEncoder().encode(items) {
             UserDefaults.standard.set(encodedData, forKey: itemsKey)
