@@ -14,11 +14,19 @@ import Foundation
  Read
  Update
  Delete
+ 
+ @AppStorage -> used in a View directly, in class we use user-default
  */
 
 class ListViewModel: ObservableObject {
     
-    @Published var items: [ItemModel] = []
+    @Published var items: [ItemModel] = [] {
+        didSet { // -> didSet is called anytime if there is any change in "items" instance
+            saveItems()
+        }
+    }
+    
+    let itemsKey: String = "items_list"
     
     init() {
         getItem()
@@ -26,12 +34,18 @@ class ListViewModel: ObservableObject {
     
     // Function to get items and append to items array
     func getItem() {
-        let newItems = [
-            ItemModel(title: "Title 1", isCompleted: false),
-            ItemModel(title: "Title 2", isCompleted: true),
-            ItemModel(title: "Title 3", isCompleted: false)
-        ]
-        items.append(contentsOf: newItems)
+//        let newItems = [
+//            ItemModel(title: "Title 1", isCompleted: false),
+//            ItemModel(title: "Title 2", isCompleted: true),
+//            ItemModel(title: "Title 3", isCompleted: false)
+//        ]
+//        items.append(contentsOf: newItems)
+        guard
+            let data  = UserDefaults.standard.data(forKey: itemsKey),
+            let savedItems = try? JSONDecoder().decode([ItemModel].self, from: data) // LOVE THE SYNTAX HERE 🤩
+        else { return }
+        
+        self.items = savedItems
     }
     
     // Function to delete items from the List
@@ -61,6 +75,12 @@ class ListViewModel: ObservableObject {
 //            items[index] = ItemModel(title: item.title, isCompleted: !item.isCompleted)
             items[index] = item.updateCompletion()
         }
-        
+    }
+    
+    // Function to save user data using User-Defaults
+    func saveItems() {
+        if let encodedData =  try? JSONEncoder().encode(items) {
+            UserDefaults.standard.set(encodedData, forKey: itemsKey)
+        }
     }
 }
